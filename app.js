@@ -23,6 +23,7 @@ const firebaseConfig = {
   appId: "1:94322118306:web:2acf1a572d678a822251fb",
   measurementId: "G-F2D4V7WJQV"
 };
+
   // Initialize Firebase
   const app = initializeApp(firebaseConfig);
   const auth = getAuth();
@@ -114,4 +115,3 @@ const firebaseConfig = {
       lab.style.color = "#d1d1d1";
     }
   }
-
