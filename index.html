@@ -3,136 +3,201 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ESP32 Firebase Kontrol Paneli</title>
+    <title>ESP32 Kontrol Paneli</title>
     <style>
-        body { font-family: Arial, sans-serif; text-align: center; background-color: #f0f2f5; margin-top: 50px; }
-        .container { background: white; padding: 30px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); display: inline-block; width: 300px; }
-        h2 { color: #333; margin-bottom: 20px; }
-        input { padding: 12px; margin: 8px 0; width: 100%; box-sizing: border-box; border: 1px solid #ccc; border-radius: 6px; }
-        button { padding: 12px; width: 100%; background-color: #007bff; color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 16px; margin-top: 10px; }
-        button:hover { background-color: #0056b3; }
-        .status { margin-top: 15px; font-weight: bold; font-size: 14px; }
-        .success { color: green; }
-        .error { color: red; }
+        /* TASARIM KISMI (CSS) */
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f4f7f6; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
+        .card { background: white; padding: 2rem; border-radius: 15px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); width: 350px; text-align: center; }
+        h1 { color: #333; margin-bottom: 0.5rem; }
         
-        /* Kontrol Paneli Gizli Başlar */
-        #controlPanel { display: none; margin-top: 20px; border-top: 1px solid #ddd; padding-top: 20px; }
-        .gpio-btn { background-color: #ffc107; color: #000; margin-bottom: 10px; }
+        /* Durum Rozeti (Online/Offline) */
+        .status-badge { display: inline-block; padding: 5px 15px; border-radius: 20px; font-size: 0.8rem; font-weight: bold; margin-bottom: 20px; }
+        .offline { background-color: #ffdddd; color: #d8000c; }
+        .online { background-color: #ddffdd; color: #008000; }
+
+        /* Giriş Formu */
+        input { width: 100%; padding: 12px; margin: 8px 0; border: 1px solid #ddd; border-radius: 5px; box-sizing: border-box; }
+        .btn { width: 100%; padding: 12px; border: none; border-radius: 5px; cursor: pointer; font-size: 1rem; margin-top: 10px; transition: 0.3s; }
+        .login-btn { background-color: #007bff; color: white; }
+        .login-btn:hover { background-color: #0056b3; }
+        .logout-btn { background-color: #dc3545; color: white; margin-top: 20px; }
+        
+        /* GPIO Butonları */
+        .gpio-container { display: flex; justify-content: space-between; align-items: center; margin: 15px 0; padding: 10px; background: #f9f9f9; border-radius: 8px; }
+        .gpio-button { padding: 10px 20px; border: none; border-radius: 5px; cursor: pointer; background-color: #e0e0e0; color: #333; font-weight: bold; }
+        .gpio-button.on { background-color: #28a745; color: white; box-shadow: 0 0 10px rgba(40, 167, 69, 0.5); }
+        .gpio-status { font-size: 0.9rem; color: #666; font-weight: bold; }
+        
+        #authMsg { color: red; font-size: 0.9rem; margin-top: 10px; }
     </style>
 </head>
 <body>
 
-    <div class="container">
-        <h2>Giriş Yap</h2>
-        
-        <div id="loginForm">
-            <input type="email" id="email" placeholder="Email Adresi">
-            <input type="password" id="password" placeholder="Şifre">
-            <button id="loginBtn">Giriş Yap</button>
-            <p id="msg" class="status"></p>
-        </div>
+<div class="card">
+    <h1>ESP32 Kontrol</h1>
+    <div id="statusBadge" class="status-badge offline">Bağlantı Yok</div>
 
-        <div id="controlPanel">
-            <h3>ESP32 Kontrol</h3>
-            <p>Giriş Başarılı!</p>
-            <button id="ledBtn" class="gpio-btn">LED Durumunu Değiştir</button>
-            <p>Durum: <span id="ledStatus">Bilinmiyor</span></p>
-            <button id="logoutBtn" style="background-color: #dc3545;">Çıkış Yap</button>
-        </div>
+    <div id="authBox">
+        <input id="emailField" type="email" placeholder="Email Adresi" />
+        <input id="passwordField" type="password" placeholder="Şifre" />
+        <button id="loginBtn" class="btn login-btn">Giriş Yap</button>
+        <p id="authMsg"></p>
     </div>
 
-    <script type="module">
-        // 1. WEB İÇİN GEREKLİ KÜTÜPHANELER (CDN)
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-        import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-        import { getDatabase, ref, set, onValue } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+    <div id="controlBox" style="display:none;">
+        
+        <div class="gpio-container">
+            <div>
+                <button id="gpio1Btn" class="gpio-button" data-gpio="gpio1">LAMBA 1</button>
+                <div id="gpio1Status" class="gpio-status">Status: OFF</div>
+            </div>
+        </div>
 
-        // 2. SENİN VERDİĞİN AYARLAR (Buraya yerleştirildi)
-        const firebaseConfig = {
-            apiKey: "AIzaSyB2M_I0jXDL0oZc-L8XMf5SCCsZjUjX1ao",
-            authDomain: "esp-project-81867.firebaseapp.com",
-            databaseURL: "https://esp-project-81867-default-rtdb.europe-west1.firebasedatabase.app",
-            projectId: "esp-project-81867",
-            storageBucket: "esp-project-81867.firebasestorage.app",
-            messagingSenderId: "94322118306",
-            appId: "1:94322118306:web:2acf1a572d678a822251fb",
-            measurementId: "G-F2D4V7WJQV"
-        };
+        <div class="gpio-container">
+            <div>
+                <button id="gpio2Btn" class="gpio-button" data-gpio="gpio2">LAMBA 2</button>
+                <div id="gpio2Status" class="gpio-status">Status: OFF</div>
+            </div>
+        </div>
 
-        // 3. UYGULAMAYI BAŞLAT
-        const app = initializeApp(firebaseConfig);
-        const auth = getAuth(app);
-        const db = getDatabase(app);
+        <div class="gpio-container">
+            <div>
+                <button id="gpio3Btn" class="gpio-button" data-gpio="gpio3">LAMBA 3</button>
+                <div id="gpio3Status" class="gpio-status">Status: OFF</div>
+            </div>
+        </div>
 
-        // Arayüz Elemanları
-        const loginBtn = document.getElementById('loginBtn');
-        const logoutBtn = document.getElementById('logoutBtn');
-        const msgBox = document.getElementById('msg');
-        const loginForm = document.getElementById('loginForm');
-        const controlPanel = document.getElementById('controlPanel');
-        const ledBtn = document.getElementById('ledBtn');
-        const ledStatusDisplay = document.getElementById('ledStatus');
+        <button id="logoutBtn" class="btn logout-btn">Çıkış Yap</button>
+    </div>
+</div>
 
-        // --- GİRİŞ YAPMA İŞLEMİ ---
-        loginBtn.addEventListener('click', () => {
-            const email = document.getElementById('email').value;
-            const password = document.getElementById('password').value;
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js";
+  import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-auth.js";
+  import { getDatabase, ref, set, onValue } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-database.js";
 
-            msgBox.innerText = "Bağlanıyor...";
-            msgBox.className = "status";
+  // SİZİN FIREBASE AYARLARINIZ
+  const firebaseConfig = {
+    apiKey: "AIzaSyB2M_I0jXDL0oZc-L8XMf5SCCsZjUjX1ao",
+    authDomain: "esp-project-81867.firebaseapp.com",
+    databaseURL: "https://esp-project-81867-default-rtdb.europe-west1.firebasedatabase.app",
+    projectId: "esp-project-81867",
+    storageBucket: "esp-project-81867.firebasestorage.app",
+    messagingSenderId: "94322118306",
+    appId: "1:94322118306:web:8d041339774e1e162251fb",
+    measurementId: "G-J815EFLDHQ"
+  };
 
-            signInWithEmailAndPassword(auth, email, password)
-                .then((userCredential) => {
-                    msgBox.innerText = "Giriş Başarılı!";
-                    msgBox.className = "status success";
-                })
-                .catch((error) => {
-                    console.error(error);
-                    msgBox.innerText = "Hata: " + error.code;
-                    msgBox.className = "status error";
-                });
-        });
+  // Firebase Başlatma
+  const app = initializeApp(firebaseConfig);
+  const auth = getAuth();
+  const db = getDatabase(app);
 
-        // --- ÇIKIŞ YAPMA İŞLEMİ ---
-        logoutBtn.addEventListener('click', () => {
-            signOut(auth);
-        });
+  // Arayüz Elemanları (HTML'deki ID'lerle eşleşir)
+  const authBox = document.getElementById("authBox");
+  const controlBox = document.getElementById("controlBox");
+  const loginBtn = document.getElementById("loginBtn");
+  const logoutBtn = document.getElementById("logoutBtn");
+  const authMsg = document.getElementById("authMsg");
+  const badge = document.getElementById("statusBadge");
 
-        // --- KULLANICI DURUMUNU İZLEME (Giriş yaptı mı?) ---
-        onAuthStateChanged(auth, (user) => {
-            if (user) {
-                // Kullanıcı giriş yapmışsa paneli göster, girişi gizle
-                loginForm.style.display = 'none';
-                controlPanel.style.display = 'block';
-                
-                // Veritabanını dinlemeye başla (Örnek: test/int)
-                dinleVeritabani();
-            } else {
-                // Çıkış yapmışsa girişi göster
-                loginForm.style.display = 'block';
-                controlPanel.style.display = 'none';
-                msgBox.innerText = "";
-            }
-        });
+  const gpioButtons = {
+    gpio1: document.getElementById("gpio1Btn"),
+    gpio2: document.getElementById("gpio2Btn"),
+    gpio3: document.getElementById("gpio3Btn")
+  };
 
-        // --- VERİTABANI İŞLEMLERİ ---
-        function dinleVeritabani() {
-            // ÖRNEK: Veritabanındaki 'test/int' yolunu dinliyoruz
-            // Eğer senin ESP32 kodunda farklı bir yol varsa burayı değiştir.
-            const dataRef = ref(db, 'test/int');
+  const gpioLabels = {
+    gpio1: document.getElementById("gpio1Status"),
+    gpio2: document.getElementById("gpio2Status"),
+    gpio3: document.getElementById("gpio3Status")
+  };
 
-            onValue(dataRef, (snapshot) => {
-                const data = snapshot.val();
-                ledStatusDisplay.innerText = data; // Ekrana yaz
-            });
-        }
+  // Giriş Yapma İşlemi
+  loginBtn.onclick = async () => {
+    authMsg.textContent = "Giriş yapılıyor...";
+    try {
+      await signInWithEmailAndPassword(
+        auth,
+        document.getElementById("emailField").value,
+        document.getElementById("passwordField").value
+      );
+    } catch (e) {
+      authMsg.textContent = "Hata: " + e.message;
+    }
+  };
 
-        // Butona basınca veritabanına veri gönder (Örnek: Rastgele sayı)
-        ledBtn.addEventListener('click', () => {
-            const rastgeleSayi = Math.floor(Math.random() * 100);
-            set(ref(db, 'test/int'), rastgeleSayi);
-        });
+  // Çıkış Yapma
+  logoutBtn.onclick = () => signOut(auth);
 
-    </script>
+  // Oturum Durumunu İzleme
+  onAuthStateChanged(auth, (user) => {
+    if (user) {
+      // Giriş yapılmışsa
+      authBox.style.display = "none";
+      controlBox.style.display = "block";
+      badge.className = "status-badge online";
+      badge.textContent = "Bağlandı";
+      badge.style.backgroundColor = "#ddffdd";
+      badge.style.color = "green";
+      startListeners();
+    } else {
+      // Çıkış yapılmışsa
+      authBox.style.display = "block";
+      controlBox.style.display = "none";
+      badge.className = "status-badge offline";
+      badge.textContent = "Giriş Yapılmadı";
+      badge.style.backgroundColor = "#ffdddd";
+      badge.style.color = "red";
+    }
+  });
+
+  // Veritabanı Dinleyicileri
+  function startListeners() {
+    ["gpio1", "gpio2", "gpio3"].forEach((key) => {
+      // Veritabanından veri okuma
+      onValue(ref(db, "/" + key), (snapshot) => {
+        let value = snapshot.val() ? 1 : 0; // null gelirse 0 say
+        updateUI(key, value);
+      });
+    });
+
+    // Butonlara tıklama olayları
+    Object.values(gpioButtons).forEach((btn) => {
+      btn.onclick = () => {
+        let gpio = btn.dataset.gpio;
+        // Eğer şu an 'on' sınıfı varsa 1'dir, kapatmak için 0 göndeririz.
+        // Eğer 'on' yoksa 0'dır, açmak için 1 göndeririz.
+        let isCurrentlyOn = btn.classList.contains("on");
+        let newState = isCurrentlyOn ? 0 : 1; 
+        
+        set(ref(db, "/" + gpio), newState)
+            .then(() => console.log(gpio + " değiştirildi: " + newState))
+            .catch((err) => console.error("Hata:", err));
+      };
+    });
+  }
+
+  // Arayüzü Güncelleme Fonksiyonu
+  function updateUI(key, val) {
+    let btn = gpioButtons[key];
+    let lab = gpioLabels[key];
+
+    if (val === 1) {
+      btn.classList.add("on");
+      btn.style.backgroundColor = "#28a745"; // Yeşil
+      btn.style.color = "white";
+      lab.textContent = "AÇIK";
+      lab.style.color = "green";
+    } else {
+      btn.classList.remove("on");
+      btn.style.backgroundColor = "#e0e0e0"; // Gri
+      btn.style.color = "#333";
+      lab.textContent = "KAPALI";
+      lab.style.color = "grey";
+    }
+  }
+</script>
+
 </body>
 </html>
