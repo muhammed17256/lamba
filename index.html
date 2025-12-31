@@ -1,11 +1,38 @@
-<script type="module">
-  // Firebase Kütüphanelerini İçe Aktar
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-  import { getDatabase, ref, set, onValue } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
-  import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ESP32 Firebase Kontrol</title>
+    <style>
+        body { font-family: Arial, sans-serif; text-align: center; margin-top: 50px; background-color: #f4f4f4; }
+        .container { background: white; padding: 20px; border-radius: 10px; box-shadow: 0 0 10px rgba(0,0,0,0.1); display: inline-block; }
+        input { padding: 10px; margin: 5px; width: 200px; }
+        button { padding: 10px 20px; background-color: #007bff; color: white; border: none; cursor: pointer; margin-top: 10px; }
+        button:hover { background-color: #0056b3; }
+        .error { color: red; margin-top: 10px; }
+        .success { color: green; margin-top: 10px; }
+    </style>
+</head>
+<body>
 
-  // BURAYA KENDİ FIREBASE BİLGİLERİNİZİ GİRİN
- const firebaseConfig = {
+    <div class="container">
+        <h1>Giriş Yap</h1>
+        <input type="email" id="email" placeholder="Email Adresi">
+        <br>
+        <input type="password" id="password" placeholder="Şifre">
+        <br>
+        <button id="loginBtn">Giriş Yap</button>
+        <p id="msg" class="error"></p>
+    </div>
+
+    <script type="module">
+        // 1. Firebase Kütüphanelerini Yüklüyoruz
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { getAuth, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+
+        // 2. AYARLAR KISMI (HATANIN KAYNAĞI BURASI)
+  const firebaseConfig = {
   apiKey: "AIzaSyB2M_I0jXDL0oZc-L8XMf5SCCsZjUjX1ao",
   authDomain: "esp-project-81867.firebaseapp.com",
   databaseURL: "https://esp-project-81867-default-rtdb.europe-west1.firebasedatabase.app",
@@ -15,13 +42,36 @@
   appId: "1:94322118306:web:2acf1a572d678a822251fb",
   measurementId: "G-F2D4V7WJQV"
 };
+        // 3. Firebase'i Başlat
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
 
-  // Firebase'i Başlat
-  const app = initializeApp(firebaseConfig);
-  const database = getDatabase(app);
-  const auth = getAuth();
+        // 4. Giriş Butonu İşlemleri
+        document.getElementById('loginBtn').addEventListener('click', () => {
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            const msgBox = document.getElementById('msg');
 
-  // --- Buradan sonrası projenin çalışma kodlarıdır ---
-  // (app.js içindeki diğer kodları buraya ekleyebilirsiniz)
-  console.log("Firebase bağlandı!");
-</script>
+            msgBox.innerText = "Giriş yapılıyor...";
+            msgBox.className = "";
+
+            signInWithEmailAndPassword(auth, email, password)
+                .then((userCredential) => {
+                    // Giriş Başarılı
+                    msgBox.innerText = "BAŞARILI! Giriş yapıldı.";
+                    msgBox.className = "success";
+                    console.log("Kullanıcı:", userCredential.user);
+                })
+                .catch((error) => {
+                    // Giriş Başarısız
+                    console.error(error);
+                    msgBox.innerText = "HATA: " + error.message;
+                    msgBox.className = "error";
+                });
+        });
+
+        console.log("Sistem hazır, API Key kontrol ediliyor...");
+    </script>
+
+</body>
+</html>
