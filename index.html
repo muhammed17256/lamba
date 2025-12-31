@@ -1,68 +1,27 @@
-<!DOCTYPE html>
-<html>
-<head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>ESP32 Firebase Paneli</title>
-  <style>
-    body { font-family: Arial, sans-serif; text-align: center; margin-top: 50px; }
-    .card { box-shadow: 0 4px 8px 0 rgba(0,0,0,0.2); width: 80%; margin: 20px auto; padding: 20px; border-radius: 10px; }
-    h1 { color: #00add6; }
-    .reading { font-size: 24px; font-weight: bold; color: #333; }
-  </style>
-</head>
-<body>
+<script type="module">
+  // Firebase Kütüphanelerini İçe Aktar
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+  import { getDatabase, ref, set, onValue } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+  import { getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
-  <h1>ESP32 Sensör Verileri</h1>
+  // BURAYA KENDİ FIREBASE BİLGİLERİNİZİ GİRİN
+ const firebaseConfig = {
+  apiKey: "AIzaSyB2M_I0jXDL0oZc-L8XMf5SCCsZjUjX1ao",
+  authDomain: "esp-project-81867.firebaseapp.com",
+  databaseURL: "https://esp-project-81867-default-rtdb.europe-west1.firebasedatabase.app",
+  projectId: "esp-project-81867",
+  storageBucket: "esp-project-81867.firebasestorage.app",
+  messagingSenderId: "94322118306",
+  appId: "1:94322118306:web:2acf1a572d678a822251fb",
+  measurementId: "G-F2D4V7WJQV"
+};
 
-  <div class="card">
-    <h3>Float Verisi</h3>
-    <p><span id="reading-float">...</span></p>
-  </div>
+  // Firebase'i Başlat
+  const app = initializeApp(firebaseConfig);
+  const database = getDatabase(app);
+  const auth = getAuth();
 
-  <div class="card">
-    <h3>Int Verisi</h3>
-    <p><span id="reading-int">...</span></p>
-  </div>
-
-  <div class="card">
-    <h3>String Verisi</h3>
-    <p><span id="reading-string">...</span></p>
-  </div>
-
-  <script type="module">
-    // Tarayıcılar için URL'den import (Node.js için değil, Web için bu gereklidir)
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-    import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
-
-    const firebaseConfig = {
-      apiKey: "AIzaSyB2M_I0jXDL0oZc-L8XMf5SCCsZjUjX1ao",
-      authDomain: "esp-project-81867.firebaseapp.com",
-      databaseURL: "https://esp-project-81867-default-rtdb.europe-west1.firebasedatabase.app",
-      projectId: "esp-project-81867",
-      storageBucket: "esp-project-81867.firebasestorage.app",
-      messagingSenderId: "94322118306",
-      appId: "1:94322118306:web:2acf1a572d678a822251fb",
-    };
-
-    const app = initializeApp(firebaseConfig);
-    const database = getDatabase(app);
-
-    var dbFloatRef = ref(database, 'test/float');
-    var dbIntRef = ref(database, 'test/int');
-    var dbStringRef = ref(database, 'test/string');
-
-    onValue(dbFloatRef, (snapshot) => {
-      document.getElementById("reading-float").innerText = snapshot.val();
-    });
-
-    onValue(dbIntRef, (snapshot) => {
-      document.getElementById("reading-int").innerText = snapshot.val();
-    });
-
-    onValue(dbStringRef, (snapshot) => {
-      document.getElementById("reading-string").innerText = snapshot.val();
-    });
-  </script>
-</body>
-</html>
+  // --- Buradan sonrası projenin çalışma kodlarıdır ---
+  // (app.js içindeki diğer kodları buraya ekleyebilirsiniz)
+  console.log("Firebase bağlandı!");
+</script>
