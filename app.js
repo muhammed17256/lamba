@@ -115,4 +115,3 @@ const firebaseConfig = {
       lab.style.color = "#d1d1d1";
     }
   }
-
