@@ -7,7 +7,30 @@
 
 <link rel="stylesheet" href="styles.css">
 
-<script type="module" src="app.js"></script>
+<script type="module">
+  import { initializeApp } from "firebase/app";
+import { getAnalytics } from "firebase/analytics";
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+  import { getAuth } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+  import { getDatabase } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+const firebaseConfig = {
+  apiKey: "AIzaSyB2M_I0jXDL0oZc-L8XMf5SCCsZjUjX1ao",
+  authDomain: "esp-project-81867.firebaseapp.com",
+  databaseURL: "https://esp-project-81867-default-rtdb.europe-west1.firebasedatabase.app",
+  projectId: "esp-project-81867",
+  storageBucket: "esp-project-81867.firebasestorage.app",
+  messagingSenderId: "94322118306",
+  appId: "1:94322118306:web:2acf1a572d678a822251fb",
+  measurementId: "G-F2D4V7WJQV"
+};
+  
+
+  const app = initializeApp(firebaseConfig);
+  const auth = getAuth(app);
+  const db = getDatabase(app);
+  
+  console.log("Firebase ayarları yüklendi.");
+</script>
 </head>
 
 <body>
