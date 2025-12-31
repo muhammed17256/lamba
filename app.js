@@ -14,13 +14,14 @@
 
   //  Replace With YOUR Firebase Config
 const firebaseConfig = {
-  apiKey: "YOUR_API_KEY",
-  authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
-  databaseURL: "https://YOUR_PROJECT_ID.firebaseio.com",
-  projectId: "YOUR_PROJECT_ID",
-  storageBucket: "YOUR_PROJECT_ID.appspot.com",
-  messagingSenderId: "SENDER_ID",
-  appId: "APP_ID"
+  apiKey: "AIzaSyB2M_I0jXDL0oZc-L8XMf5SCCsZjUjX1ao",
+  authDomain: "esp-project-81867.firebaseapp.com",
+  databaseURL: "https://esp-project-81867-default-rtdb.europe-west1.firebasedatabase.app",
+  projectId: "esp-project-81867",
+  storageBucket: "esp-project-81867.firebasestorage.app",
+  messagingSenderId: "94322118306",
+  appId: "1:94322118306:web:8d041339774e1e162251fb",
+  measurementId: "G-J815EFLDHQ"
 };
 
   // Initialize Firebase
@@ -114,3 +115,4 @@ const firebaseConfig = {
       lab.style.color = "#d1d1d1";
     }
   }
+
