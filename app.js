@@ -20,10 +20,9 @@ const firebaseConfig = {
   projectId: "esp-project-81867",
   storageBucket: "esp-project-81867.firebasestorage.app",
   messagingSenderId: "94322118306",
-  appId: "1:94322118306:web:8d041339774e1e162251fb",
-  measurementId: "G-J815EFLDHQ"
+  appId: "1:94322118306:web:2acf1a572d678a822251fb",
+  measurementId: "G-F2D4V7WJQV"
 };
-
   // Initialize Firebase
   const app = initializeApp(firebaseConfig);
   const auth = getAuth();
@@ -115,3 +114,4 @@ const firebaseConfig = {
       lab.style.color = "#d1d1d1";
     }
   }
+
